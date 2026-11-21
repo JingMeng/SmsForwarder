@@ -1,7 +1,20 @@
-apply plugin: 'com.xuexiang.xrouter'
+// XRouter runtime retains its generated route-table discovery fallback.
 apply plugin: 'kotlin-kapt'
+dependencies { implementation 'org.aspectj:aspectjrt:1.9.22.1' }
 //apply plugin: 'android-aspectjx'
-apply plugin: 'com.xuexiang.xaop'
+// XAOP is woven below through AGP 8 scoped artifacts instead of removed Transform API.
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        def weaveTask = tasks.register("weave${variant.name.capitalize()}Xaop", SmsAspectWeave) {
+            weaveClasspath.from(tasks.named("compile${variant.name.capitalize()}JavaWithJavac", JavaCompile).map { it.classpath })
+            weaveClasspath.from(android.bootClasspath)
+        }
+        variant.artifacts.forScope(com.android.build.api.variant.ScopedArtifacts.Scope.PROJECT)
+            .use(weaveTask)
+            .toTransform(com.android.build.api.artifact.ScopedArtifact.CLASSES.INSTANCE,
+                { it.inputJars }, { it.inputDirectories }, { it.outputJar })
+    }
+}
 
 //自动添加依赖
 configurations.each { configuration ->

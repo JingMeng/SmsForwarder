@@ -1,0 +1,8 @@
+plugins { id 'groovy' }
+repositories { google(); mavenCentral() }
+dependencies {
+    implementation gradleApi()
+    implementation localGroovy()
+    implementation 'com.android.tools.build:gradle:8.2.1'
+    implementation 'org.aspectj:aspectjtools:1.9.22.1'
+}
